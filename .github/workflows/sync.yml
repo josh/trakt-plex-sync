@@ -1,0 +1,25 @@
+name: Sync
+
+on:
+  schedule:
+    - cron: "0 */12 * * *"
+  workflow_dispatch:
+
+env:
+  PLEX_USERNAME: ${{ secrets.PLEX_USERNAME }}
+  PLEX_PASSWORD: ${{ secrets.PLEX_PASSWORD }}
+  PLEX_TOKEN: ${{ secrets.PLEX_TOKEN }}
+  PLEX_SERVER: ${{ secrets.PLEX_SERVER }}
+  TRAKT_CLIENT_ID: ${{ secrets.TRAKT_CLIENT_ID }}
+  TRAKT_ACCESS_TOKEN: ${{ secrets.TRAKT_ACCESS_TOKEN }}
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Sync
+        run: |
+          python .
