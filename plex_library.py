@@ -41,11 +41,7 @@ def videos():
     for show in plex.library.section("TV Shows").all():
         for episode in show.episodes():
             guids = set(
-                [guid.id for guid in episode.guids]
-                + [
-                    "{}/{}".format(guid.id, episode.seasonEpisode)
-                    for guid in show.guids
-                ]
+                ["{}/{}".format(guid.id, episode.seasonEpisode) for guid in show.guids]
             )
             yield (guids, episode)
 
