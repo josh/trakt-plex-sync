@@ -3,7 +3,6 @@ import sys
 
 import requests
 from plexapi.myplex import MyPlexAccount
-from plexapi.server import PlexServer
 from tqdm import tqdm
 
 print("Logging into Plex", file=sys.stderr)
