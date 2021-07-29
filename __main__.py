@@ -1,3 +1,5 @@
+import os
+
 from tqdm import tqdm
 
 import plex_library
@@ -6,7 +8,9 @@ import trakt_played
 watched_guids = trakt_played.watched_guids()
 
 
-for (guids, video) in tqdm(plex_library.videos(), total=plex_library.totalSize()):
+for (guids, video) in tqdm(
+    plex_library.videos(), total=plex_library.totalSize(), disable=os.getenv("CI")
+):
     if not guids:
         continue
 
