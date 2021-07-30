@@ -2,14 +2,21 @@ import os
 
 from plexapi.myplex import MyPlexAccount
 
-plex = None
+import cache
 
 
-def connect_once():
-    global plex
-    if plex:
-        return plex
+def video_guids(video):
+    guids = cache.get(video.guid)
+    if guids:
+        return set(guids)
 
+    guids = list([guid.id for guid in video.guids])
+    cache.set(video.guid, guids)
+
+    return set(guids)
+
+
+def videos():
     account = MyPlexAccount(
         username=os.environ["PLEX_USERNAME"],
         password=os.environ["PLEX_PASSWORD"],
@@ -18,33 +25,16 @@ def connect_once():
     resource = account.resource(os.environ["PLEX_SERVER"])
     plex = resource.connect()
 
-    return plex
-
-
-def totalSize():
-    plex = connect_once()
-
-    size = 0
-    size += plex.library.section("Movies").totalSize
-    for show in plex.library.section("TV Shows").all():
-        size += show.leafCount
-    return size
-
-
-def videos():
-    plex = connect_once()
-
     for movie in plex.library.section("Movies").all():
-        guids = set([guid.id for guid in movie.guids])
-        yield (guids, movie)
+        yield (video_guids(movie), movie)
 
     for show in plex.library.section("TV Shows").all():
+        show_guids = video_guids(show)
         for episode in show.episodes():
             guids = set(
-                ["{}/{}".format(guid.id, episode.seasonEpisode) for guid in show.guids]
+                ["{}/{}".format(guid, episode.seasonEpisode) for guid in show_guids]
             )
             yield (guids, episode)
-
 
 
 if __name__ == "__main__":

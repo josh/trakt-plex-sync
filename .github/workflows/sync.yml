@@ -22,6 +22,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Load cache
+        uses: actions/cache@v2
+        with:
+          path: cache.json
+          key: ${{ github.sha }}
+
       - name: Sync
         run: |
           python .
@@ -32,3 +38,4 @@ jobs:
           PLEX_SERVER: ${{ secrets.PLEX_SERVER }}
           TRAKT_CLIENT_ID: ${{ secrets.TRAKT_CLIENT_ID }}
           TRAKT_ACCESS_TOKEN: ${{ secrets.TRAKT_ACCESS_TOKEN }}
+          CACHE_PATH: cache.json
