@@ -46,8 +46,7 @@ def videos():
             yield (guids, episode)
 
 
-if __name__ == "__main__":
-    from tqdm import tqdm
 
-    for (guids, video) in tqdm(videos(), total=totalSize()):
+if __name__ == "__main__":
+    for (guids, video) in videos():
         print(guids)

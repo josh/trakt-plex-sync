@@ -1,3 +1,2 @@
 PlexAPI==4.7.0
 requests==2.26.0
-tqdm==4.61.2
