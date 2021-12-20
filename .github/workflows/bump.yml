@@ -1,0 +1,15 @@
+name: Bump
+
+on:
+  schedule:
+    - cron: "0 0 * * 0"
+  workflow_dispatch:
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - uses: wader/bump/action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.CR_PAT }}
