@@ -1,0 +1,2 @@
+python /FROM python:([\d.]+)\-alpine/ docker:python|^3
+Dockerfile
