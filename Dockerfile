@@ -1,4 +1,4 @@
-FROM python:3.10.2-alpine
+FROM python:3.10.4-alpine
 
 RUN wget -O /usr/bin/tickerd https://github.com/josh/tickerd/releases/latest/download/tickerd-linux-amd64 && chmod +x /usr/bin/tickerd
 ENV TICKERD_HEALTHCHECK_PORT 9000
