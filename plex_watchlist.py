@@ -51,6 +51,7 @@ def compare_media_items(account, trakt_item, plex_item):
 
     return False
 
+
 def video_guids(account, video):
     guids = cache.get(video.guid)
     if guids:
@@ -60,7 +61,6 @@ def video_guids(account, video):
     guids = list([guid.id for guid in video.guids])
     cache.set(video.guid, guids)
     return set(guids)
-
 
 
 def detect_plex_guid_from_trakt_media(account, trakt_item):
