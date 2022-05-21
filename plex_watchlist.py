@@ -22,11 +22,11 @@ def trakt_watchlist():
     return r.json()
 
 
-def compare_media_items(trakt_item, plex_item):
+def compare_media_items(account, trakt_item, plex_item):
     if trakt_item["type"] != plex_item.TYPE:
         return False
 
-    plex_guids = cache.get(plex_item.guid)
+    plex_guids = video_guids(account, video=plex_item)
 
     if trakt_item["type"] == "movie":
         tmdb_guid = "tmdb://{}".format(trakt_item["movie"]["ids"]["tmdb"])
@@ -51,6 +51,17 @@ def compare_media_items(trakt_item, plex_item):
 
     return False
 
+def video_guids(account, video):
+    guids = cache.get(video.guid)
+    if guids:
+        return set(guids)
+
+    video = account.fetchItem("https://metadata.provider.plex.tv{}".format(video.key))
+    guids = list([guid.id for guid in video.guids])
+    cache.set(video.guid, guids)
+    return set(guids)
+
+
 
 def detect_plex_guid_from_trakt_media(account, trakt_item):
     if trakt_item["type"] == "movie":
@@ -62,7 +73,7 @@ def detect_plex_guid_from_trakt_media(account, trakt_item):
 
     for plex_item in account.searchDiscover(title):
         plex_guid_item[plex_item.guid] = plex_item
-        if compare_media_items(trakt_item=trakt_item, plex_item=plex_item):
+        if compare_media_items(account, trakt_item=trakt_item, plex_item=plex_item):
             return plex_item.guid
 
     return None
