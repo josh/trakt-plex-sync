@@ -1,0 +1,34 @@
+name: Trakt
+
+on:
+  schedule:
+    - cron: "0 0 1 * *"
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Refresh Trakt token
+        run: |
+          curl --silent --fail \
+              -X POST \
+              -F "client_id=$TRAKT_CLIENT_ID" \
+              -F "client_secret=$TRAKT_CLIENT_SECRET" \
+              -F "refresh_token=$TRAKT_REFRESH_TOKEN" \
+              -F "grant_type=refresh_token" \
+            'https://api.trakt.tv/oauth/token' >token.json
+        env:
+          TRAKT_CLIENT_ID: ${{ secrets.TRAKT_CLIENT_ID }}
+          TRAKT_CLIENT_SECRET: ${{ secrets.TRAKT_CLIENT_SECRET }}
+          TRAKT_REFRESH_TOKEN: ${{ secrets.TRAKT_REFRESH_TOKEN }}
+
+      - name: Update GitHub secrets
+        run: |
+          jq --raw-output '.access_token' token.json | gh secret set TRAKT_ACCESS_TOKEN
+          jq --raw-output '.refresh_token' token.json | gh secret set TRAKT_REFRESH_TOKEN
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
