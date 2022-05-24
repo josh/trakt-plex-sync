@@ -2,18 +2,7 @@ import os
 
 from plexapi.myplex import MyPlexAccount
 
-import cache
-
-
-def video_guids(video):
-    guids = cache.get(video.guid)
-    if guids:
-        return set(guids)
-
-    guids = list([guid.id for guid in video.guids])
-    cache.set(video.guid, guids)
-
-    return set(guids)
+import plex_cache
 
 
 def videos():
@@ -26,10 +15,10 @@ def videos():
     plex = resource.connect()
 
     for movie in plex.library.section("Movies").all():
-        yield (video_guids(movie), movie)
+        yield (plex_cache.video_guids(movie), movie)
 
     for show in plex.library.section("TV Shows").all():
-        show_guids = video_guids(show)
+        show_guids = plex_cache.video_guids(show)
         for episode in show.episodes():
             guids = set(
                 ["{}/{}".format(guid, episode.seasonEpisode) for guid in show_guids]

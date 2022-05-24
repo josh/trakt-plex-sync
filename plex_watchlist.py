@@ -3,7 +3,7 @@ import os
 import requests
 from plexapi.myplex import MyPlexAccount
 
-import cache
+import plex_cache
 
 plex_guid_item = {}
 
@@ -26,7 +26,7 @@ def compare_media_items(account, trakt_item, plex_item):
     if trakt_item["type"] != plex_item.TYPE:
         return False
 
-    plex_guids = video_guids(account, video=plex_item)
+    plex_guids = plex_cache.video_guids2(account=account, video=plex_item)
 
     if trakt_item["type"] == "movie":
         tmdb_guid = "tmdb://{}".format(trakt_item["movie"]["ids"]["tmdb"])
@@ -52,24 +52,20 @@ def compare_media_items(account, trakt_item, plex_item):
     return False
 
 
-def video_guids(account, video):
-    guids = cache.get(video.guid)
-    if guids:
-        return set(guids)
-
-    video = account.fetchItem("https://metadata.provider.plex.tv{}".format(video.key))
-    guids = list([guid.id for guid in video.guids])
-    cache.set(video.guid, guids)
-    return set(guids)
-
-
 def detect_plex_guid_from_trakt_media(account, trakt_item):
     if trakt_item["type"] == "movie":
         title = trakt_item["movie"]["title"]
+        tmdb_guid = "tmdb://{}".format(trakt_item["movie"]["ids"]["tmdb"])
     elif trakt_item["type"] == "show":
         title = trakt_item["show"]["title"]
+        tmdb_guid = "tmdb://{}".format(trakt_item["show"]["ids"]["tmdb"])
     else:
         return None
+
+    if tmdb_guid:
+        plex_guid = plex_cache.plex_guid(guid=tmdb_guid)
+        if plex_guid:
+            return plex_guid
 
     for plex_item in account.searchDiscover(title):
         plex_guid_item[plex_item.guid] = plex_item
