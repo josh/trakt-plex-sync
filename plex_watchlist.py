@@ -55,10 +55,10 @@ def compare_media_items(account, trakt_item, plex_item):
 def detect_plex_guid_from_trakt_media(account, trakt_item):
     if trakt_item["type"] == "movie":
         title = trakt_item["movie"]["title"]
-        tmdb_guid = "tmdb://{}".format(trakt_item["movie"]["ids"]["tmdb"])
+        # tmdb_guid = "tmdb://{}".format(trakt_item["movie"]["ids"]["tmdb"])
     elif trakt_item["type"] == "show":
         title = trakt_item["show"]["title"]
-        tmdb_guid = "tmdb://{}".format(trakt_item["show"]["ids"]["tmdb"])
+        # tmdb_guid = "tmdb://{}".format(trakt_item["show"]["ids"]["tmdb"])
     else:
         return None
 
