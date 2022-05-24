@@ -9,14 +9,14 @@ queue_flush = False
 
 
 def get(key):
-    assert type(key) == str
+    assert isinstance(key, str)
     return cache.get(key)
 
 
 def set(key, value):
     global cache
     global queue_flush
-    assert type(key) == str
+    assert isinstance(key, str)
     cache[key] = value
     queue_flush = True
 
@@ -38,7 +38,7 @@ def reload():
     try:
         with open(path, "r") as f:
             cache = json.load(f)
-            assert type(cache) == dict
+            assert isinstance(cache, dict)
     except FileNotFoundError:
         pass
 
