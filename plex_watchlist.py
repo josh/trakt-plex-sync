@@ -62,10 +62,11 @@ def detect_plex_guid_from_trakt_media(account, trakt_item):
     else:
         return None
 
-    if tmdb_guid:
-        plex_guid = plex_cache.plex_guid(guid=tmdb_guid)
-        if plex_guid:
-            return plex_guid
+    # if tmdb_guid:
+    #     plex_guid = plex_cache.plex_guid(guid=tmdb_guid)
+    #     if plex_guid:
+    #         plex_guid_item[plex_guid] = ???
+    #         return plex_guid
 
     for plex_item in account.searchDiscover(title):
         plex_guid_item[plex_item.guid] = plex_item
