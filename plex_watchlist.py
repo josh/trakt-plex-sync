@@ -3,9 +3,7 @@ import os
 import requests
 from plexapi.myplex import MyPlexAccount
 
-import plex_cache
-
-plex_guid_item = {}
+PLEX_GUID_ITEM = {}
 
 
 def trakt_watchlist():
@@ -22,58 +20,88 @@ def trakt_watchlist():
     return r.json()
 
 
-def compare_media_items(account, trakt_item, plex_item):
-    if trakt_item["type"] != plex_item.TYPE:
-        return False
+def plex_watchlist_guids(account):
+    guids = set()
 
-    plex_guids = plex_cache.video_guids2(account=account, video=plex_item)
+    # BUG: Watchlist only returns 20 items
+    for item in account.watchlist():
+        PLEX_GUID_ITEM[item.guid] = item
+        guids.add(item.guid)
 
-    if trakt_item["type"] == "movie":
-        tmdb_guid = "tmdb://{}".format(trakt_item["movie"]["ids"]["tmdb"])
-        imdb_guid = "imdb://{}".format(trakt_item["movie"]["ids"]["imdb"])
+    for item in account.watchlist(filter="available"):
+        PLEX_GUID_ITEM[item.guid] = item
+        guids.add(item.guid)
 
-        if plex_guids:
-            if tmdb_guid in plex_guids or imdb_guid in plex_guids:
-                return True
+    for item in account.watchlist(filter="released"):
+        PLEX_GUID_ITEM[item.guid] = item
+        guids.add(item.guid)
 
-        if (
-            plex_item.title == trakt_item["movie"]["title"]
-            and plex_item.year == trakt_item["movie"]["year"]
-        ):
-            return True
+    for item in account.watchlist(sort="watchlistedAt"):
+        PLEX_GUID_ITEM[item.guid] = item
+        guids.add(item.guid)
 
-    elif trakt_item["type"] == "show":
-        if (
-            plex_item.title == trakt_item["show"]["title"]
-            and plex_item.year == trakt_item["show"]["year"]
-        ):
-            return True
+    for item in account.watchlist(sort="titleSort"):
+        PLEX_GUID_ITEM[item.guid] = item
+        guids.add(item.guid)
 
-    return False
+    for item in account.watchlist(sort="originallyAvailableAt"):
+        PLEX_GUID_ITEM[item.guid] = item
+        guids.add(item.guid)
+
+    return guids
 
 
-def detect_plex_guid_from_trakt_media(account, trakt_item):
-    if trakt_item["type"] == "movie":
-        title = trakt_item["movie"]["title"]
-        # tmdb_guid = "tmdb://{}".format(trakt_item["movie"]["ids"]["tmdb"])
-    elif trakt_item["type"] == "show":
-        title = trakt_item["show"]["title"]
-        # tmdb_guid = "tmdb://{}".format(trakt_item["show"]["ids"]["tmdb"])
-    else:
+def pmdb_fetch_plex_id(path):
+    r = requests.get("https://josh.github.io/pmdb/{}".format(path))
+    if r.status_code != 200:
         return None
 
-    # if tmdb_guid:
-    #     plex_guid = plex_cache.plex_guid(guid=tmdb_guid)
-    #     if plex_guid:
-    #         plex_guid_item[plex_guid] = ???
-    #         return plex_guid
-
-    for plex_item in account.searchDiscover(title):
-        plex_guid_item[plex_item.guid] = plex_item
-        if compare_media_items(account, trakt_item=trakt_item, plex_item=plex_item):
-            return plex_item.guid
+    data = r.json()
+    if data.get("plex_type") and data.get("plex_id"):
+        return "plex://{}/{}".format(data["plex_type"], data["plex_id"])
 
     return None
+
+
+def detect_plex_guid_from_trakt_media(trakt_item):
+    if trakt_item["type"] == "movie" and trakt_item["movie"]["ids"]["imdb"]:
+        url = "imdb/{}.json".format(trakt_item["movie"]["ids"]["imdb"])
+        plex_guid = pmdb_fetch_plex_id(url)
+        if plex_guid:
+            return plex_guid
+
+    if trakt_item["type"] == "movie" and trakt_item["movie"]["ids"]["tmdb"]:
+        url = "tmdb/movie/{}.json".format(trakt_item["movie"]["ids"]["tmdb"])
+        plex_guid = pmdb_fetch_plex_id(url)
+        if plex_guid:
+            return plex_guid
+
+    if trakt_item["type"] == "show" and trakt_item["show"]["ids"]["imdb"]:
+        url = "imdb/{}.json".format(trakt_item["show"]["ids"]["imdb"])
+        plex_guid = pmdb_fetch_plex_id(url)
+        if plex_guid:
+            return plex_guid
+
+    if trakt_item["type"] == "show" and trakt_item["show"]["ids"]["tmdb"]:
+        url = "tmdb/tv/{}.json".format(trakt_item["show"]["ids"]["tmdb"])
+        plex_guid = pmdb_fetch_plex_id(url)
+        if plex_guid:
+            return plex_guid
+
+    return None
+
+
+def find_by_plex_guid(account, guid):
+    assert isinstance(guid, str)
+    assert guid.startswith("plex://")
+
+    if guid in PLEX_GUID_ITEM:
+        return PLEX_GUID_ITEM[guid]
+
+    ekey = "https://metadata.provider.plex.tv/library/metadata/{}".format(
+        guid.split("/", 4)[3]
+    )
+    return account.fetchItem(ekey)
 
 
 def compare_trakt_plex_watchlist():
@@ -83,21 +111,16 @@ def compare_trakt_plex_watchlist():
         token=os.environ["PLEX_TOKEN"],
     )
 
-    plex_guids = set()
+    plex_guids = plex_watchlist_guids(account)
+
     trakt_guids = set()
-
-    # BUG: Watchlist only returns 20 items
-    for plex_item in account.watchlist():
-        plex_guid_item[plex_item.guid] = plex_item
-        plex_guids.add(plex_item.guid)
-
     for trakt_item in trakt_watchlist():
-        plex_guid = detect_plex_guid_from_trakt_media(account, trakt_item)
+        plex_guid = detect_plex_guid_from_trakt_media(trakt_item)
         if plex_guid:
             trakt_guids.add(plex_guid)
 
-    add = [plex_guid_item[guid] for guid in trakt_guids - plex_guids]
-    remove = [plex_guid_item[guid] for guid in plex_guids - trakt_guids]
+    add = [find_by_plex_guid(account, guid) for guid in trakt_guids - plex_guids]
+    remove = [find_by_plex_guid(account, guid) for guid in plex_guids - trakt_guids]
     return list(add), list(remove)
 
 
