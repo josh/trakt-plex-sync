@@ -21,34 +21,7 @@ def trakt_watchlist():
 
 
 def plex_watchlist_guids(account):
-    guids = set()
-
-    # BUG: Watchlist only returns 20 items
-    for item in account.watchlist():
-        PLEX_GUID_ITEM[item.guid] = item
-        guids.add(item.guid)
-
-    for item in account.watchlist(filter="available"):
-        PLEX_GUID_ITEM[item.guid] = item
-        guids.add(item.guid)
-
-    for item in account.watchlist(filter="released"):
-        PLEX_GUID_ITEM[item.guid] = item
-        guids.add(item.guid)
-
-    for item in account.watchlist(sort="watchlistedAt"):
-        PLEX_GUID_ITEM[item.guid] = item
-        guids.add(item.guid)
-
-    for item in account.watchlist(sort="titleSort"):
-        PLEX_GUID_ITEM[item.guid] = item
-        guids.add(item.guid)
-
-    for item in account.watchlist(sort="originallyAvailableAt"):
-        PLEX_GUID_ITEM[item.guid] = item
-        guids.add(item.guid)
-
-    return guids
+    return set([item.guid for item in account.watchlist()])
 
 
 def pmdb_fetch_plex_id(path):
