@@ -13,12 +13,12 @@ for (guids, video) in plex_library.videos():
     if not guids:
         continue
 
-    isWatched = watched_guids.intersection(guids)
+    isPlayed = watched_guids.intersection(guids)
 
-    if video.isWatched and not isWatched:
+    if video.isPlayed and not isPlayed:
         video.markUnwatched()
         unwatched_count += 1
-    elif not video.isWatched and isWatched:
+    elif not video.isPlayed and isPlayed:
         video.markWatched()
         watched_count += 1
 
