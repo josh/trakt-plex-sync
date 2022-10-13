@@ -19,7 +19,7 @@ for (guids, video) in plex_library.videos():
         video.markUnwatched()
         unwatched_count += 1
     elif not video.isPlayed and isPlayed:
-        video.markWatched()
+        video.markPlayed()
         watched_count += 1
 
 if watched_count:
