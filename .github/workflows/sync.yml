@@ -27,7 +27,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: cache.json
-          key: ${{ github.sha }}
+          key: cache-${{ github.run_id }}
+          restore-keys: |
+            cache-
 
       - name: Sync
         run: |
