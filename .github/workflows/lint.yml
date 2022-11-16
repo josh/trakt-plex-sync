@@ -3,46 +3,5 @@ name: Lint
 on: [push, pull_request]
 
 jobs:
-  black:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.x"
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install black isort
-
-      - name: Lint with isort
-        run: |
-          isort --profile black --check --diff .
-
-      - name: Lint with black
-        run: |
-          black --check --diff .
-
-  flake8:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.x"
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install flake8
-
-      - name: Lint with flake8
-        run: |
-          flake8 . --count --show-source --statistics --max-line-length=88
+  lint:
+    uses: josh/workflows/.github/workflows/python-lint.yml@main
