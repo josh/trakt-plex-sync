@@ -38,5 +38,5 @@ def videos():
 
 
 if __name__ == "__main__":
-    for (guids, video) in videos():
+    for guids, video in videos():
         print(guids)
