@@ -9,7 +9,7 @@ watched_guids = trakt_played.watched_guids()
 watched_count = 0
 unwatched_count = 0
 
-for (guids, video) in plex_library.videos():
+for guids, video in plex_library.videos():
     if not guids:
         continue
 
