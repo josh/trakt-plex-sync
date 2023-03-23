@@ -1,2 +1,4 @@
 PlexAPI==4.13.4
+pyarrow==11.0.0
 requests==2.28.2
+s3fs==2023.3.0
