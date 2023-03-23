@@ -28,7 +28,8 @@ jobs:
 
       - name: Update GitHub secrets
         run: |
-          jq --raw-output '.access_token' token.json | gh secret set TRAKT_ACCESS_TOKEN
-          jq --raw-output '.refresh_token' token.json | gh secret set TRAKT_REFRESH_TOKEN
+          jq --raw-output '.access_token' token.json | gh secret set --app actions TRAKT_ACCESS_TOKEN
+          jq --raw-output '.access_token' token.json | gh secret set --app codespaces TRAKT_ACCESS_TOKEN
+          jq --raw-output '.refresh_token' token.json | gh secret set --app actions TRAKT_REFRESH_TOKEN
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
