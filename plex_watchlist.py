@@ -1,80 +1,44 @@
 import os
 
+import pyarrow.feather as feather
 import requests
+import s3fs
 from plexapi.myplex import MyPlexAccount
 
-PLEX_GUID_ITEM = {}
+
+def _load_plex_index():
+    index = {
+        "tmdb_movie": {},
+        "tmdb_show": {},
+    }
+    fs = s3fs.S3FileSystem(anon=True)
+    with fs.open("wikidatabots/plex.arrow", "rb") as f:
+        table = feather.read_table(f, columns=["key", "type", "tmdb_id"])
+        for row in table.to_pylist():
+            if row["type"] == "movie" and row["tmdb_id"]:
+                index["tmdb_movie"][row["tmdb_id"]] = row["key"].hex()
+            elif row["type"] == "show" and row["tmdb_id"]:
+                index["tmdb_show"][row["tmdb_id"]] = row["key"].hex()
+    return index
 
 
-def trakt_watchlist():
+def _trakt_watchlist():
     headers = {
         "Content-Type": "application/json",
         "trakt-api-version": "2",
         "trakt-api-key": os.environ["TRAKT_CLIENT_ID"],
         "Authorization": "Bearer " + os.environ["TRAKT_ACCESS_TOKEN"],
     }
-
     url = "https://api.trakt.tv/sync/watchlist"
     r = requests.get(url=url, headers=headers)
     r.raise_for_status()
     return r.json()
 
 
-def plex_watchlist_guids(account):
-    return set([item.guid for item in account.watchlist()])
-
-
-def pmdb_fetch_plex_id(path):
-    r = requests.get("https://josh.github.io/pmdb/{}".format(path))
-    if r.status_code != 200:
-        return None
-
-    data = r.json()
-    if data.get("plex_type") and data.get("plex_id"):
-        return "plex://{}/{}".format(data["plex_type"], data["plex_id"])
-
-    return None
-
-
-def detect_plex_guid_from_trakt_media(trakt_item):
-    if trakt_item["type"] == "movie" and trakt_item["movie"]["ids"]["imdb"]:
-        url = "imdb/{}.json".format(trakt_item["movie"]["ids"]["imdb"])
-        plex_guid = pmdb_fetch_plex_id(url)
-        if plex_guid:
-            return plex_guid
-
-    if trakt_item["type"] == "movie" and trakt_item["movie"]["ids"]["tmdb"]:
-        url = "tmdb/movie/{}.json".format(trakt_item["movie"]["ids"]["tmdb"])
-        plex_guid = pmdb_fetch_plex_id(url)
-        if plex_guid:
-            return plex_guid
-
-    if trakt_item["type"] == "show" and trakt_item["show"]["ids"]["imdb"]:
-        url = "imdb/{}.json".format(trakt_item["show"]["ids"]["imdb"])
-        plex_guid = pmdb_fetch_plex_id(url)
-        if plex_guid:
-            return plex_guid
-
-    if trakt_item["type"] == "show" and trakt_item["show"]["ids"]["tmdb"]:
-        url = "tmdb/tv/{}.json".format(trakt_item["show"]["ids"]["tmdb"])
-        plex_guid = pmdb_fetch_plex_id(url)
-        if plex_guid:
-            return plex_guid
-
-    return None
-
-
-def find_by_plex_guid(account, guid):
-    assert isinstance(guid, str)
-    assert guid.startswith("plex://")
-
-    if guid in PLEX_GUID_ITEM:
-        return PLEX_GUID_ITEM[guid]
-
-    ekey = "https://metadata.provider.plex.tv/library/metadata/{}".format(
-        guid.split("/", 4)[3]
+def _find_by_plex_guid(account, ratingkey):
+    return account.fetchItem(
+        f"https://metadata.provider.plex.tv/library/metadata/{ratingkey}"
     )
-    return account.fetchItem(ekey)
 
 
 def compare_trakt_plex_watchlist():
@@ -84,16 +48,23 @@ def compare_trakt_plex_watchlist():
         token=os.environ["PLEX_TOKEN"],
     )
 
-    plex_guids = plex_watchlist_guids(account)
+    plex_index = _load_plex_index()
 
-    trakt_guids = set()
-    for trakt_item in trakt_watchlist():
-        plex_guid = detect_plex_guid_from_trakt_media(trakt_item)
-        if plex_guid:
-            trakt_guids.add(plex_guid)
+    plex_keys = set(
+        [item.key.replace("/library/metadata/", "") for item in account.watchlist()]
+    )
 
-    add = [find_by_plex_guid(account, guid) for guid in trakt_guids - plex_guids]
-    remove = [find_by_plex_guid(account, guid) for guid in plex_guids - trakt_guids]
+    trakt_keys = set()
+    for trakt_item in _trakt_watchlist():
+        item_type = trakt_item["type"]
+        assert item_type == "movie" or item_type == "show"
+        tmdb_id = trakt_item[item_type]["ids"]["tmdb"]
+        plex_key = plex_index[f"tmdb_{item_type}"].get(tmdb_id)
+        if plex_key:
+            trakt_keys.add(plex_key)
+
+    add = [_find_by_plex_guid(account, key) for key in trakt_keys - plex_keys]
+    remove = [_find_by_plex_guid(account, key) for key in plex_keys - trakt_keys]
     return list(add), list(remove)
 
 
