@@ -1,8 +1,7 @@
 import os
 
-import pyarrow.feather as feather
+import pyarrow.parquet as pq
 import requests
-import s3fs
 from plexapi.myplex import MyPlexAccount
 
 
@@ -11,14 +10,15 @@ def _load_plex_index():
         "tmdb_movie": {},
         "tmdb_show": {},
     }
-    fs = s3fs.S3FileSystem(anon=True)
-    with fs.open("wikidatabots/plex.arrow", "rb") as f:
-        table = feather.read_table(f, columns=["key", "type", "tmdb_id"])
-        for row in table.to_pylist():
-            if row["type"] == "movie" and row["tmdb_id"]:
-                index["tmdb_movie"][row["tmdb_id"]] = row["key"].hex()
-            elif row["type"] == "show" and row["tmdb_id"]:
-                index["tmdb_show"][row["tmdb_id"]] = row["key"].hex()
+    table = pq.read_table(
+        "s3://wikidatabots/plex.parquet",
+        columns=["key", "type", "tmdb_id"],
+    )
+    for row in table.to_pylist():
+        if row["type"] == "movie" and row["tmdb_id"]:
+            index["tmdb_movie"][row["tmdb_id"]] = row["key"].hex()
+        elif row["type"] == "show" and row["tmdb_id"]:
+            index["tmdb_show"][row["tmdb_id"]] = row["key"].hex()
     return index
 
 
