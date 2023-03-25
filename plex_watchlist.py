@@ -1,8 +1,11 @@
+import faulthandler
 import os
 
 import pyarrow.parquet as pq
 import requests
 from plexapi.myplex import MyPlexAccount
+
+faulthandler.enable()
 
 
 def _load_plex_index():
