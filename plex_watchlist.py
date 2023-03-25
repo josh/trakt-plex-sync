@@ -1,11 +1,8 @@
-import faulthandler
 import os
 
-import pyarrow.parquet as pq
+import polars as pl
 import requests
 from plexapi.myplex import MyPlexAccount
-
-faulthandler.enable()
 
 
 def _load_plex_index():
@@ -13,15 +10,20 @@ def _load_plex_index():
         "tmdb_movie": {},
         "tmdb_show": {},
     }
-    table = pq.read_table(
-        "s3://wikidatabots/plex.parquet",
-        columns=["key", "type", "tmdb_id"],
+    df = (
+        pl.scan_parquet(
+            "s3://wikidatabots/plex.parquet",
+            storage_options={"anon": True},
+        )
+        .filter(pl.col("tmdb_id").is_not_null())
+        .with_columns(pl.col("key").bin.encode("hex").alias("hexkey"))
+        .select("type", "hexkey", "tmdb_id")
+        .collect()
     )
-    for row in table.to_pylist():
-        if row["type"] == "movie" and row["tmdb_id"]:
-            index["tmdb_movie"][row["tmdb_id"]] = row["key"].hex()
-        elif row["type"] == "show" and row["tmdb_id"]:
-            index["tmdb_show"][row["tmdb_id"]] = row["key"].hex()
+    for _, key, tmdb_id in df.filter(pl.col("type") == "movie").iter_rows():
+        index["tmdb_movie"][tmdb_id] = key
+    for _, key, tmdb_id in df.filter(pl.col("type") == "show").iter_rows():
+        index["tmdb_show"][tmdb_id] = key
     return index
 
 
