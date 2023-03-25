@@ -1,6 +1,6 @@
 import os
 
-import pandas as pd
+import pyarrow.parquet as pq
 import requests
 from plexapi.myplex import MyPlexAccount
 
@@ -10,16 +10,15 @@ def _load_plex_index():
         "tmdb_movie": {},
         "tmdb_show": {},
     }
-    df = pd.read_parquet(
+    table = pq.read_table(
         "s3://wikidatabots/plex.parquet",
         columns=["key", "type", "tmdb_id"],
-        use_nullable_dtypes=True,
-        storage_options={"anon": True},
     )
-    for _, key, _, tmdb_id in df[(df["type"] == "movie") & df["tmdb_id"]].itertuples():
-        index["tmdb_movie"][tmdb_id] = key.hex()
-    for _, key, _, tmdb_id in df[(df["type"] == "show") & df["tmdb_id"]].itertuples():
-        index["tmdb_show"][tmdb_id] = key.hex()
+    for row in table.to_pylist():
+        if row["type"] == "movie" and row["tmdb_id"]:
+            index["tmdb_movie"][row["tmdb_id"]] = row["key"].hex()
+        elif row["type"] == "show" and row["tmdb_id"]:
+            index["tmdb_show"][row["tmdb_id"]] = row["key"].hex()
     return index
 
 
