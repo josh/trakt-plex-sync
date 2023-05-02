@@ -1,4 +1,4 @@
 PlexAPI==4.13.4
-polars==0.17.8
+polars==0.17.11
 requests==2.29.0
 s3fs==2023.4.0
