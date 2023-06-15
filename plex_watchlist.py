@@ -1,30 +1,9 @@
 import os
+import re
 
-import polars as pl
 import requests
 from plexapi.myplex import MyPlexAccount
-
-
-def _load_plex_index():
-    index = {
-        "tmdb_movie": {},
-        "tmdb_show": {},
-    }
-    df = (
-        pl.scan_parquet(
-            "s3://wikidatabots/plex.parquet",
-            storage_options={"anon": True},
-        )
-        .filter(pl.col("tmdb_id").is_not_null())
-        .with_columns(pl.col("key").bin.encode("hex").alias("hexkey"))
-        .select("type", "hexkey", "tmdb_id")
-        .collect()
-    )
-    for _, key, tmdb_id in df.filter(pl.col("type") == "movie").iter_rows():
-        index["tmdb_movie"][tmdb_id] = key
-    for _, key, tmdb_id in df.filter(pl.col("type") == "show").iter_rows():
-        index["tmdb_show"][tmdb_id] = key
-    return index
+from plexapi.video import Video
 
 
 def _trakt_watchlist():
@@ -40,42 +19,110 @@ def _trakt_watchlist():
     return r.json()
 
 
-def _find_by_plex_guid(account, ratingkey):
+_IMDB_TO_PLEX_QUERY = """
+SELECT DISTINCT ?plex_id WHERE {
+  VALUES ?imdb_id { ?imdb_ids }
+  ?item wdt:P345 ?imdb_id; wdt:P11460 ?plex_id.
+}
+"""
+
+_TMDB_MOVIE_TO_PLEX_QUERY = """
+SELECT DISTINCT ?plex_id WHERE {
+  VALUES ?tmdb_movie_id { ?tmdb_movie_ids }
+  ?item wdt:P4947 ?tmdb_movie_id; wdt:P11460 ?plex_id.
+}
+"""
+
+_TMDB_TV_TO_PLEX_QUERY = """
+SELECT DISTINCT ?plex_id WHERE {
+  VALUES ?tmdb_tv_id { ?tmdb_tv_ids }
+  ?item wdt:P4983 ?tmdb_tv_id; wdt:P11460 ?plex_id.
+}
+"""
+
+_RATING_KEY_RE = r"^[a-f0-9]{24}$"
+
+
+def _sparql_values_str(values: set[str | int]) -> str:
+    return " ".join([f'"{v}"' for v in values])
+
+
+def _sparql(query: str):
+    r = requests.post(
+        "https://query.wikidata.org/sparql",
+        data={"query": query},
+        headers={"Accept": "application/json"},
+        timeout=(1, 90),
+    )
+    r.raise_for_status()
+    data = r.json()
+    return data
+
+
+def _wd_trakt_to_plex_ids(trakt_items):
+    imdb_ids: set[str] = set()
+    tmdb_movie_ids: set[int] = set()
+    tmdb_tv_ids: set[int] = set()
+    plex_ids: set[str] = set()
+
+    for trakt_item in trakt_items:
+        if trakt_item["type"] == "movie":
+            ids = trakt_item["movie"]["ids"]
+            if imdb_id := ids.get("imdb"):
+                imdb_ids.add(imdb_id)
+            if tmdb_id := ids.get("tmdb"):
+                tmdb_movie_ids.add(tmdb_id)
+        elif trakt_item["type"] == "show":
+            ids = trakt_item["show"]["ids"]
+            if imdb_id := ids.get("imdb"):
+                imdb_ids.add(imdb_id)
+            if tmdb_id := ids.get("tmdb"):
+                tmdb_tv_ids.add(tmdb_id)
+
+    queries = [
+        _IMDB_TO_PLEX_QUERY.replace("?imdb_ids", _sparql_values_str(imdb_ids)),
+        _TMDB_MOVIE_TO_PLEX_QUERY.replace(
+            "?tmdb_movie_ids", _sparql_values_str(tmdb_movie_ids)
+        ),
+        _TMDB_TV_TO_PLEX_QUERY.replace("?tmdb_tv_ids", _sparql_values_str(tmdb_tv_ids)),
+    ]
+
+    for query in queries:
+        data = _sparql(query)
+        for result in data["results"]["bindings"]:
+            plex_id = result["plex_id"]["value"]
+            if re.match(_RATING_KEY_RE, plex_id):
+                plex_ids.add(plex_id)
+
+    return plex_ids
+
+
+def _find_by_plex_guid(account, ratingkey) -> Video:
     return account.fetchItem(
         f"https://metadata.provider.plex.tv/library/metadata/{ratingkey}"
     )
 
 
-def compare_trakt_plex_watchlist():
+def compare_trakt_plex_watchlist() -> tuple[list[Video], list[Video]]:
     account = MyPlexAccount(
         username=os.environ["PLEX_USERNAME"],
         password=os.environ["PLEX_PASSWORD"],
         token=os.environ["PLEX_TOKEN"],
     )
 
-    plex_index = _load_plex_index()
-
-    plex_keys = set(
+    plex_keys: set[str] = set(
         [item.key.replace("/library/metadata/", "") for item in account.watchlist()]
     )
+    trakt_keys: set[str] = _wd_trakt_to_plex_ids(_trakt_watchlist())
 
-    trakt_keys = set()
-    for trakt_item in _trakt_watchlist():
-        item_type = trakt_item["type"]
-        assert item_type == "movie" or item_type == "show"
-        tmdb_id = trakt_item[item_type]["ids"]["tmdb"]
-        plex_key = plex_index[f"tmdb_{item_type}"].get(tmdb_id)
-        if plex_key:
-            trakt_keys.add(plex_key)
-
-    add = [_find_by_plex_guid(account, key) for key in trakt_keys - plex_keys]
-    remove = [_find_by_plex_guid(account, key) for key in plex_keys - trakt_keys]
-    return list(add), list(remove)
+    add_videos = [_find_by_plex_guid(account, key) for key in trakt_keys - plex_keys]
+    remove_videos = [_find_by_plex_guid(account, key) for key in plex_keys - trakt_keys]
+    return list(add_videos), list(remove_videos)
 
 
 if __name__ == "__main__":
-    (add, remove) = compare_trakt_plex_watchlist()
-    for item in add:
-        print("+", item.title)
-    for item in remove:
-        print("-", item.title)
+    (add_videos, remove_videos) = compare_trakt_plex_watchlist()
+    for video in add_videos:
+        print("+", video.title)
+    for video in remove_videos:
+        print("-", video.title)
