@@ -1,19 +1,20 @@
 import atexit
 import json
 import os
+from typing import Any
 
 enabled = "CACHE_PATH" in os.environ
 path = os.environ.get("CACHE_PATH")
-cache = {}
+cache: dict[str, Any] = {}
 queue_flush = False
 
 
-def get(key):
+def get(key: str):
     assert isinstance(key, str)
     return cache.get(key)
 
 
-def set(key, value):
+def set(key: str, value: Any):
     global cache
     global queue_flush
     assert isinstance(key, str)

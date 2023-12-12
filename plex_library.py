@@ -1,6 +1,6 @@
 import os
 
-from plexapi.myplex import MyPlexAccount
+from plexapi.myplex import MyPlexAccount  # type: ignore
 
 import cache
 
@@ -31,9 +31,7 @@ def videos():
     for show in plex.library.section("TV Shows").all():
         show_guids = video_guids(show)
         for episode in show.episodes():
-            guids = set(
-                [f"{guid}/{episode.seasonEpisode}" for guid in show_guids]
-            )
+            guids = set([f"{guid}/{episode.seasonEpisode}" for guid in show_guids])
             yield (guids, episode)
 
 

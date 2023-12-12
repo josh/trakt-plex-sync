@@ -2,8 +2,8 @@ import os
 import re
 
 import requests
-from plexapi.myplex import MyPlexAccount
-from plexapi.video import Video
+from plexapi.myplex import MyPlexAccount  # type: ignore
+from plexapi.video import Video  # type: ignore
 
 
 def _trakt_watchlist():
@@ -60,10 +60,10 @@ def _sparql(query: str):
 
 
 def _wd_trakt_to_plex_ids(trakt_items):
-    imdb_ids: set[str] = set()
-    tmdb_movie_ids: set[int] = set()
-    tmdb_tv_ids: set[int] = set()
-    plex_ids: set[str] = set()
+    imdb_ids = set()
+    tmdb_movie_ids = set()
+    tmdb_tv_ids = set()
+    plex_ids = set()
 
     for trakt_item in trakt_items:
         if trakt_item["type"] == "movie":
