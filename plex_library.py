@@ -32,7 +32,7 @@ def videos():
         show_guids = video_guids(show)
         for episode in show.episodes():
             guids = set(
-                ["{}/{}".format(guid, episode.seasonEpisode) for guid in show_guids]
+                [f"{guid}/{episode.seasonEpisode}" for guid in show_guids]
             )
             yield (guids, episode)
 

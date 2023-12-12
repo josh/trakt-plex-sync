@@ -36,7 +36,7 @@ def reload():
     assert enabled, "caching not enabled"
 
     try:
-        with open(path, "r") as f:
+        with open(path) as f:
             cache = json.load(f)
             assert isinstance(cache, dict)
     except FileNotFoundError:
