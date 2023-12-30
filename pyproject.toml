@@ -1,2 +1,2 @@
 [tool.ruff.lint]
-select = ["I", "UP"]
+extend-select = ["I", "UP"]
