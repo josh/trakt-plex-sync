@@ -26,7 +26,7 @@ jobs:
       - name: Load cache
         uses: actions/cache@v4
         with:
-          path: cache.json
+          path: .cache/cache.pickle
           key: cache-${{ github.run_id }}
           restore-keys: |
             cache-
@@ -41,4 +41,4 @@ jobs:
           PLEX_SERVER: ${{ secrets.PLEX_SERVER }}
           TRAKT_CLIENT_ID: ${{ secrets.TRAKT_CLIENT_ID }}
           TRAKT_ACCESS_TOKEN: ${{ secrets.TRAKT_ACCESS_TOKEN }}
-          CACHE_PATH: cache.json
+          CACHE_PATH: .cache/cache.pickle

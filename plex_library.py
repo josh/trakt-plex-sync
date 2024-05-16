@@ -2,18 +2,7 @@ import os
 
 from plexapi.myplex import MyPlexAccount  # type: ignore
 
-import cache
-
-
-def video_guids(video):
-    guids = cache.get(video.guid)
-    if guids:
-        return set(guids)
-
-    guids = list([guid.id for guid in video.guids])
-    cache.set(video.guid, guids)
-
-    return set(guids)
+import lru_cache
 
 
 def videos():
@@ -25,14 +14,25 @@ def videos():
     resource = account.resource(os.environ["PLEX_SERVER"])
     plex = resource.connect()
 
-    for movie in plex.library.section("Movies").all():
-        yield (video_guids(movie), movie)
+    cache = lru_cache.open(
+        os.environ.get("CACHE_PATH", "/tmp/cache.pickle"),
+        max_bytesize=5 * 1024 * 1024,  # 5 MB
+    )
 
-    for show in plex.library.section("TV Shows").all():
-        show_guids = video_guids(show)
-        for episode in show.episodes():
-            guids = set([f"{guid}/{episode.seasonEpisode}" for guid in show_guids])
-            yield (guids, episode)
+    with cache:
+        for movie in plex.library.section("Movies").all():
+            guids = cache.get_or_load(
+                movie.guid, lambda: set(guid.id for guid in movie.guids)
+            )
+            yield (guids, movie)
+
+        for show in plex.library.section("TV Shows").all():
+            show_guids = cache.get_or_load(
+                show.guid, lambda: set(guid.id for guid in show.guids)
+            )
+            for episode in show.episodes():
+                guids = set([f"{guid}/{episode.seasonEpisode}" for guid in show_guids])
+                yield (guids, episode)
 
 
 if __name__ == "__main__":
