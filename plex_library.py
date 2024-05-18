@@ -1,8 +1,7 @@
 import os
 
+import lru_cache  # type: ignore
 from plexapi.myplex import MyPlexAccount  # type: ignore
-
-import lru_cache
 
 
 def videos():
