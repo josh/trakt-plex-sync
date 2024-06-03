@@ -4,3 +4,6 @@ requires-python = ">=3.10"
 
 [tool.ruff.lint]
 extend-select = ["I", "UP"]
+
+[tool.mypy]
+strict = false
