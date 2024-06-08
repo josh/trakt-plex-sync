@@ -1,6 +1,11 @@
 [project]
 name = "trakt-plex-sync"
+readme = "README.md"
+authors = [{name = "Joshua Peek"}]
 requires-python = ">=3.10"
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+]
 
 [tool.ruff.lint]
 extend-select = ["I", "UP"]
