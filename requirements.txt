@@ -2,6 +2,6 @@ certifi==2024.2.2
 charset-normalizer==3.3.2
 idna==3.7
 lru-cache @ https://github.com/josh/py-lru-cache/releases/download/v1.0.0/lru_cache-1.0.0-py3-none-any.whl
-plexapi==4.15.13
+plexapi==4.15.14
 requests==2.32.3
 urllib3==2.2.2
