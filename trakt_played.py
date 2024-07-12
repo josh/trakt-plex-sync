@@ -10,7 +10,7 @@ headers = {
 }
 
 
-def watched_movie_guids():
+def watched_movie_guids() -> set[str]:
     url = "https://api.trakt.tv/users/me/watched/movies"
     r = requests.get(url=url, headers=headers)
     r.raise_for_status()
@@ -22,7 +22,7 @@ def watched_movie_guids():
     return guids
 
 
-def watched_shows_guids():
+def watched_shows_guids() -> set[str]:
     url = "https://api.trakt.tv/users/me/watched/shows"
     r = requests.get(url=url, headers=headers)
     r.raise_for_status()
@@ -43,7 +43,7 @@ def watched_shows_guids():
     return guids
 
 
-def watched_guids():
+def watched_guids() -> set[str]:
     return watched_movie_guids().union(watched_shows_guids())
 
 

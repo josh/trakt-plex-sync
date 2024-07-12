@@ -1,10 +1,12 @@
 import os
+from collections.abc import Iterator
 
-import lru_cache  # type: ignore
+import lru_cache
 from plexapi.myplex import MyPlexAccount  # type: ignore
+from plexapi.video import Video  # type: ignore
 
 
-def videos():
+def videos() -> Iterator[tuple[set[str], Video]]:
     account = MyPlexAccount(
         username=os.environ["PLEX_USERNAME"],
         password=os.environ["PLEX_PASSWORD"],

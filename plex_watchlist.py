@@ -1,12 +1,13 @@
 import os
 import re
+from typing import Any
 
 import requests
 from plexapi.myplex import MyPlexAccount  # type: ignore
 from plexapi.video import Video  # type: ignore
 
 
-def _trakt_watchlist():
+def _trakt_watchlist() -> Any:
     headers = {
         "Content-Type": "application/json",
         "trakt-api-version": "2",
@@ -47,7 +48,7 @@ def _sparql_values_str(values: set[str | int]) -> str:
     return " ".join([f'"{v}"' for v in values])
 
 
-def _sparql(query: str):
+def _sparql(query: str) -> Any:
     r = requests.post(
         "https://query.wikidata.org/sparql",
         data={"query": query},
@@ -59,7 +60,7 @@ def _sparql(query: str):
     return data
 
 
-def _wd_trakt_to_plex_ids(trakt_items):
+def _wd_trakt_to_plex_ids(trakt_items: list[dict[str, Any]]) -> set[str]:
     imdb_ids = set()
     tmdb_movie_ids = set()
     tmdb_tv_ids = set()
@@ -97,7 +98,7 @@ def _wd_trakt_to_plex_ids(trakt_items):
     return plex_ids
 
 
-def _find_by_plex_guid(account, ratingkey) -> Video:
+def _find_by_plex_guid(account: MyPlexAccount, ratingkey: str) -> Video:
     return account.fetchItem(
         f"https://metadata.provider.plex.tv/library/metadata/{ratingkey}"
     )
