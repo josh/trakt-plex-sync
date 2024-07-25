@@ -47,12 +47,13 @@ _RATING_KEY_RE = r"^[a-f0-9]{24}$"
 def _sparql_values_str(values: set[str | int]) -> str:
     return " ".join([f'"{v}"' for v in values])
 
+_WIKIDATA_USER_AGENT = "TraktPlexBot/0.0 (https://github.com/josh/trakt-plex-sync)"
 
 def _sparql(query: str) -> Any:
     r = requests.post(
         "https://query.wikidata.org/sparql",
         data={"query": query},
-        headers={"Accept": "application/json"},
+        headers={"Accept": "application/json", "User-Agent": _WIKIDATA_USER_AGENT},
         timeout=(1, 90),
     )
     r.raise_for_status()
