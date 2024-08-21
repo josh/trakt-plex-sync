@@ -12,7 +12,7 @@ mypy==1.11.1
     # via trakt-plex-sync (pyproject.toml)
 mypy-extensions==1.0.0
     # via mypy
-plexapi==4.15.15
+plexapi==4.15.16
     # via trakt-plex-sync (pyproject.toml)
 requests==2.32.3
     # via
