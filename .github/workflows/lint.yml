@@ -17,8 +17,7 @@ jobs:
         with:
           python-version-file: "pyproject.toml"
 
-      - name: Install uv
-        run: pipx install uv
+      - uses: astral-sh/setup-uv@v1
 
       - name: Install ruff
         run: |
@@ -41,8 +40,7 @@ jobs:
         with:
           python-version-file: "pyproject.toml"
 
-      - name: Install uv
-        run: pipx install uv
+      - uses: astral-sh/setup-uv@v1
 
       - name: Install dependencies
         run: |
