@@ -8,7 +8,7 @@ idna==3.10
     # via requests
 lru-cache @ https://github.com/josh/py-lru-cache/releases/download/v1.0.0/lru_cache-1.0.0-py3-none-any.whl
     # via trakt-plex-sync (pyproject.toml)
-mypy==1.11.2
+mypy==1.12.0
     # via trakt-plex-sync (pyproject.toml)
 mypy-extensions==1.0.0
     # via mypy
