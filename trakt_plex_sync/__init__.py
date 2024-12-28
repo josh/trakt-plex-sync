@@ -1,7 +1,6 @@
 import sys
 
-import plex_library
-import trakt_played
+from . import plex_library, trakt_played
 
 
 def main() -> None:

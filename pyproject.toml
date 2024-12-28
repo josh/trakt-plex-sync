@@ -19,11 +19,6 @@ dependencies = [
 [tool.hatch.metadata]
 allow-direct-references = true
 
-[tool.hatch.build.targets.wheel.force-include]
-"plex_library.py" = "plex_library.py"
-"trakt_played.py" = "trakt_played.py"
-"trakt_plex_sync.py" = "trakt_plex_sync.py"
-
 [project.scripts]
 trakt-plex-sync = "trakt_plex_sync:main"
 
