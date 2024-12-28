@@ -2,7 +2,7 @@
 #    uv pip compile pyproject.toml --all-extras --output-file requirements.txt
 certifi==2024.12.14
     # via requests
-charset-normalizer==3.4.0
+charset-normalizer==3.4.1
     # via requests
 idna==3.10
     # via requests
@@ -18,9 +18,9 @@ requests==2.32.3
     # via
     #   trakt-plex-sync (pyproject.toml)
     #   plexapi
-ruff==0.8.0
+ruff==0.8.4
     # via trakt-plex-sync (pyproject.toml)
-types-requests==2.32.0.20240712
+types-requests==2.32.0.20241016
     # via trakt-plex-sync (pyproject.toml)
 typing-extensions==4.12.2
     # via mypy
