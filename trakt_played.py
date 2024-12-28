@@ -1,8 +1,9 @@
+import json
 import os
+import urllib.request
+from typing import Any
 
-import requests
-
-headers = {
+_HTTP_HEADERS = {
     "Content-Type": "application/json",
     "trakt-api-version": "2",
     "trakt-api-key": os.environ["TRAKT_CLIENT_ID"],
@@ -12,11 +13,10 @@ headers = {
 
 def watched_movie_guids() -> set[str]:
     url = "https://api.trakt.tv/users/me/watched/movies"
-    r = requests.get(url=url, headers=headers)
-    r.raise_for_status()
+    entries = _get_json(url)
 
     guids = set()
-    for entry in r.json():
+    for entry in entries:
         guids.add("tmdb://{}".format(entry["movie"]["ids"]["tmdb"]))
         guids.add("imdb://{}".format(entry["movie"]["ids"]["imdb"]))
     return guids
@@ -24,11 +24,10 @@ def watched_movie_guids() -> set[str]:
 
 def watched_shows_guids() -> set[str]:
     url = "https://api.trakt.tv/users/me/watched/shows"
-    r = requests.get(url=url, headers=headers)
-    r.raise_for_status()
+    entries = _get_json(url)
 
     guids = set()
-    for entry in r.json():
+    for entry in entries:
         for season in entry["seasons"]:
             for episode in season["episodes"]:
                 for service in ["imdb", "tmdb", "tvdb"]:
@@ -45,6 +44,14 @@ def watched_shows_guids() -> set[str]:
 
 def watched_guids() -> set[str]:
     return watched_movie_guids().union(watched_shows_guids())
+
+
+def _get_json(url: str) -> Any:
+    req = urllib.request.Request(url, headers=_HTTP_HEADERS)
+    with urllib.request.urlopen(req, timeout=10) as response:
+        data = response.read()
+        assert isinstance(data, bytes)
+        return json.loads(data)
 
 
 if __name__ == "__main__":
