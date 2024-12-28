@@ -1,5 +1,6 @@
 [project]
 name = "trakt-plex-sync"
+version = "0.0.0"
 readme = "README.md"
 authors = [{ name = "Joshua Peek" }]
 requires-python = ">=3.10"
