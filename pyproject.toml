@@ -1,3 +1,7 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "trakt-plex-sync"
 version = "0.0.0"
@@ -11,6 +15,17 @@ dependencies = [
     "lru-cache @ https://github.com/josh/py-lru-cache/releases/download/v1.0.0/lru_cache-1.0.0-py3-none-any.whl",
     "plexapi>=4.0.0,<5.0",
 ]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel.force-include]
+"plex_library.py" = "plex_library.py"
+"trakt_played.py" = "trakt_played.py"
+"trakt_plex_sync.py" = "trakt_plex_sync.py"
+
+[project.scripts]
+trakt-plex-sync = "trakt_plex_sync:main"
 
 [project.optional-dependencies]
 dev = [
