@@ -16,7 +16,7 @@ plexapi==4.16.1
     # via trakt-plex-sync (pyproject.toml)
 requests==2.32.3
     # via plexapi
-ruff==0.9.1
+ruff==0.11.0
     # via trakt-plex-sync (pyproject.toml)
 typing-extensions==4.12.2
     # via mypy
