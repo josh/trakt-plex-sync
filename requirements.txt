@@ -20,5 +20,5 @@ ruff==0.11.0
     # via trakt-plex-sync (pyproject.toml)
 typing-extensions==4.13.2
     # via mypy
-urllib3==2.3.0
+urllib3==2.4.0
     # via requests
