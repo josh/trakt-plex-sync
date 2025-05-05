@@ -2,7 +2,7 @@
 #    uv pip compile pyproject.toml --all-extras --output-file requirements.txt
 certifi==2025.4.26
     # via requests
-charset-normalizer==3.4.1
+charset-normalizer==3.4.2
     # via requests
 idna==3.10
     # via requests
