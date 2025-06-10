@@ -14,7 +14,7 @@ mypy-extensions==1.1.0
     # via mypy
 plexapi==4.17.0
     # via trakt-plex-sync (pyproject.toml)
-requests==2.32.3
+requests==2.32.4
     # via plexapi
 ruff==0.11.0
     # via trakt-plex-sync (pyproject.toml)
