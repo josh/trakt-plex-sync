@@ -12,22 +12,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version-file: "pyproject.toml"
-
       - uses: astral-sh/setup-uv@v6
 
-      - name: Install ruff
-        run: |
-          uv pip install --system --constraint requirements.txt ruff
+      - name: Install dependencies
+        run: uv sync
 
       - name: Ruff Formatter
-        run: ruff format --diff .
+        run: uv run ruff format --diff .
 
       - name: Ruff Linter
-        run: ruff check .
+        run: uv run ruff check .
 
   mypy:
     runs-on: ubuntu-24.04
@@ -35,16 +29,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version-file: "pyproject.toml"
-
       - uses: astral-sh/setup-uv@v6
 
       - name: Install dependencies
-        run: |
-          uv pip install --system --requirement requirements.txt
+        run: uv sync
 
       - name: mypy
-        run: mypy .
+        run: uv run mypy .
