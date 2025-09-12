@@ -10,7 +10,11 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/create-github-app-token@v2
+        id: app-token
+        with:
+          app-id: ${{ vars.GH_APP_ID }}
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
 
       - name: Refresh Trakt token
         run: |
@@ -28,8 +32,8 @@ jobs:
 
       - name: Update GitHub secrets
         run: |
-          jq --raw-output '.access_token' token.json | gh secret set --app actions TRAKT_ACCESS_TOKEN
-          jq --raw-output '.access_token' token.json | gh secret set --app codespaces TRAKT_ACCESS_TOKEN
-          jq --raw-output '.refresh_token' token.json | gh secret set --app actions TRAKT_REFRESH_TOKEN
+          jq --raw-output '.access_token' token.json | gh secret set --repo "$GH_REPO" --app actions TRAKT_ACCESS_TOKEN
+          jq --raw-output '.refresh_token' token.json | gh secret set --repo "$GH_REPO" --app actions TRAKT_REFRESH_TOKEN
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
