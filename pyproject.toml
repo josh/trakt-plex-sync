@@ -1,35 +1,43 @@
 [build-system]
-requires = ["hatchling"]
 build-backend = "hatchling.build"
+requires = [ "hatchling" ]
 
 [project]
 name = "trakt-plex-sync"
 version = "0.1.0"
 readme = "README.md"
-authors = [{ name = "Joshua Peek" }]
+authors = [ { name = "Joshua Peek" } ]
 requires-python = ">=3.10"
 classifiers = [
     "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
     "lru-cache @ https://github.com/josh/py-lru-cache/releases/download/v1.0.0/lru_cache-1.0.0-py3-none-any.whl",
-    "plexapi>=4.0.0,<5.0",
+    "plexapi>=4,<5",
+]
+
+scripts.trakt-plex-sync = "trakt_plex_sync:main"
+
+[dependency-groups]
+dev = [
+    "mypy>=1,<2",
+    "ruff>=0.5",
 ]
 
 [tool.hatch.metadata]
 allow-direct-references = true
 
-[project.scripts]
-trakt-plex-sync = "trakt_plex_sync:main"
+[tool.ruff]
+lint.extend-select = [ "I", "UP" ]
 
-[dependency-groups]
-dev = [
-    "mypy>=1.0.0,<2.0",
-    "ruff>=0.5.0",
-]
-
-[tool.ruff.lint]
-extend-select = ["I", "UP"]
+[tool.pyproject-fmt]
+indent = 4
 
 [tool.mypy]
 strict = true
