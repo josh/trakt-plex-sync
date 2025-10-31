@@ -83,19 +83,11 @@ wheels = [
 
 [[package]]
 name = "lru-cache"
-version = "1.0.0"
-source = { url = "https://github.com/josh/py-lru-cache/releases/download/v1.0.0/lru_cache-1.0.0-py3-none-any.whl" }
+version = "1.0.2"
+source = { url = "https://github.com/josh/lru-cache-python/releases/download/v1.0.2/lru_cache-1.0.2-py3-none-any.whl" }
 wheels = [
-    { url = "https://github.com/josh/py-lru-cache/releases/download/v1.0.0/lru_cache-1.0.0-py3-none-any.whl", hash = "sha256:e97104085637cf63de7d324890812054d61b86bef045dce37d5f1f0506dbc809" },
+    { url = "https://github.com/josh/lru-cache-python/releases/download/v1.0.2/lru_cache-1.0.2-py3-none-any.whl", hash = "sha256:62386284d3613fc3ad44d4bd01ef87ff8c079c413da529713a68adf49634ea3d" },
 ]
-
-[package.metadata]
-requires-dist = [
-    { name = "mypy", marker = "extra == 'test'", specifier = "~=1.10" },
-    { name = "pytest", marker = "extra == 'test'", specifier = "~=8.2" },
-    { name = "ruff", marker = "extra == 'test'", specifier = "~=0.4.0" },
-]
-provides-extras = ["test"]
 
 [[package]]
 name = "mypy"
@@ -269,14 +261,14 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "lru-cache", url = "https://github.com/josh/py-lru-cache/releases/download/v1.0.0/lru_cache-1.0.0-py3-none-any.whl" },
-    { name = "plexapi", specifier = ">=4.0.0,<5.0" },
+    { name = "lru-cache", url = "https://github.com/josh/lru-cache-python/releases/download/v1.0.2/lru_cache-1.0.2-py3-none-any.whl" },
+    { name = "plexapi", specifier = ">=4,<5" },
 ]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "mypy", specifier = ">=1.0.0,<2.0" },
-    { name = "ruff", specifier = ">=0.5.0" },
+    { name = "mypy", specifier = ">=1,<2" },
+    { name = "ruff", specifier = ">=0.5" },
 ]
 
 [[package]]
