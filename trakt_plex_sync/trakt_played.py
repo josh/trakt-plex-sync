@@ -1,5 +1,6 @@
 import json
 import os
+import time
 import urllib.request
 from typing import Any
 
@@ -10,10 +11,13 @@ _HTTP_HEADERS = {
     "Authorization": "Bearer " + os.environ["TRAKT_ACCESS_TOKEN"],
 }
 
+_MAX_RETRIES = 3
+_RETRY_DELAY_SECONDS = 2
+
 
 def watched_movie_guids() -> set[str]:
     url = "https://api.trakt.tv/users/me/watched/movies"
-    entries = _get_json(url)
+    entries = _get_json_with_retry(url, _MAX_RETRIES)
 
     guids = set()
     for entry in entries:
@@ -24,7 +28,7 @@ def watched_movie_guids() -> set[str]:
 
 def watched_shows_guids() -> set[str]:
     url = "https://api.trakt.tv/users/me/watched/shows"
-    entries = _get_json(url)
+    entries = _get_json_with_retry(url, _MAX_RETRIES)
 
     guids = set()
     for entry in entries:
@@ -52,6 +56,20 @@ def _get_json(url: str) -> Any:
         data = response.read()
         assert isinstance(data, bytes)
         return json.loads(data)
+
+
+def _get_json_with_retry(url: str, count: int) -> Any:
+    last_error: TimeoutError | None = None
+    for attempt in range(1, count + 1):
+        try:
+            return _get_json(url)
+        except TimeoutError as error:
+            last_error = error
+            if attempt == count:
+                raise
+            time.sleep(_RETRY_DELAY_SECONDS * attempt)
+    assert last_error is not None, "Retry loop exited unexpectedly without raising TimeoutError"
+    raise last_error
 
 
 if __name__ == "__main__":
