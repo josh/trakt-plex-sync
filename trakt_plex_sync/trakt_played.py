@@ -68,7 +68,9 @@ def _get_json_with_retry(url: str, count: int) -> Any:
             if attempt == count:
                 raise
             time.sleep(_RETRY_DELAY_SECONDS * attempt)
-    assert last_error is not None, "Retry loop exited unexpectedly without raising TimeoutError"
+    assert last_error is not None, (
+        "Retry loop exited unexpectedly without raising TimeoutError"
+    )
     raise last_error
 
 
