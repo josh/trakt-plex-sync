@@ -4,7 +4,7 @@ on: push
 
 jobs:
   ruff:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-slim
 
     env:
       RUFF_OUTPUT_FORMAT: github
@@ -24,7 +24,7 @@ jobs:
         run: uv run ruff check .
 
   mypy:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-slim
 
     steps:
       - uses: actions/checkout@v5
