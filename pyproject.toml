@@ -28,7 +28,7 @@ scripts.trakt-plex-sync = "trakt_plex_sync:main"
 [dependency-groups]
 dev = [
     "mypy>=1,<2",
-    "ruff>=0.5",
+    "ruff>=0.5,<2",
 ]
 
 [tool.hatch.metadata]
