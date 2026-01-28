@@ -2,10 +2,14 @@ import json
 import os
 import time
 import urllib.request
+from importlib.metadata import version
 from typing import Any
+
+_VERSION = version("trakt-plex-sync")
 
 _HTTP_HEADERS = {
     "Content-Type": "application/json",
+    "User-Agent": f"trakt-plex-sync/{_VERSION}",
     "trakt-api-version": "2",
     "trakt-api-key": os.environ["TRAKT_CLIENT_ID"],
     "Authorization": "Bearer " + os.environ["TRAKT_ACCESS_TOKEN"],
