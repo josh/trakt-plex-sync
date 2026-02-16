@@ -228,14 +228,14 @@ wheels = [
 
 [[package]]
 name = "plexapi"
-version = "4.17.2"
+version = "4.18.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/97/34/375cafba2d8ad0c52b5767b67bb7d1a4db74e72a518a278a1e20b944750f/plexapi-4.17.2.tar.gz", hash = "sha256:438fbc79817f298a0897163cbd4626817559640584ac326bcf9dd5026b0b6f04", size = 160148, upload-time = "2025-11-18T18:33:56.802Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/cd/af/8f17abadb477d5895091713e49c311d7516f1a51c701241261daacf6ff92/plexapi-4.18.0.tar.gz", hash = "sha256:c34dd0be3a0397a76ea3358d2f31d0385353c102757ac254e7e43f107e17e851", size = 160237, upload-time = "2026-01-31T06:50:01.549Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d7/fb/16635bae1f674de963a18554b5eefcdce28f32036bec78433fa7f82b2809/plexapi-4.17.2-py3-none-any.whl", hash = "sha256:2ceea79d5d19a2bc34c38d2f49ccaa9d423fe0ca07e3c2ed7a4dd97e7df4b86c", size = 172159, upload-time = "2025-11-18T18:33:55.401Z" },
+    { url = "https://files.pythonhosted.org/packages/ce/bf/053e89b1fb3ef0a0ce55830448b6fda38d9445d904f9b67e93a6633ba4df/plexapi-4.18.0-py3-none-any.whl", hash = "sha256:31b4d7dae985a38191e7565b323285be4a5f69c14625956d171f1835004dc9eb", size = 175287, upload-time = "2026-01-31T06:49:59.613Z" },
 ]
 
 [[package]]
@@ -320,7 +320,7 @@ wheels = [
 
 [[package]]
 name = "trakt-plex-sync"
-version = "0.1.0"
+version = "0.2.0"
 source = { editable = "." }
 dependencies = [
     { name = "lru-cache" },
