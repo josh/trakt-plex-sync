@@ -391,7 +391,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "lru-cache", url = "https://github.com/josh/lru-cache-python/releases/download/v1.0.2/lru_cache-1.0.2-py3-none-any.whl" },
-    { name = "plexapi", specifier = ">=4.18,<5" },
+    { name = "plexapi", specifier = ">=4.17.2,<5" },
 ]
 
 [package.metadata.requires-dev]
