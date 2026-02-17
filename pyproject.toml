@@ -42,3 +42,14 @@ indent = 4
 
 [tool.mypy]
 strict = true
+
+[[tool.mypy.overrides]]
+module = "plexapi.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+    "trakt_plex_sync",
+    "trakt_plex_sync.plex_library",
+]
+warn_unused_ignores = false
