@@ -16,10 +16,10 @@ def main() -> None:
         isPlayed = watched_guids.intersection(guids)
 
         if video.isPlayed and not isPlayed:
-            video.markUnwatched()
+            video.markUnwatched()  # type: ignore[no-untyped-call]
             unwatched_count += 1
         elif not video.isPlayed and isPlayed:
-            video.markPlayed()
+            video.markPlayed()  # type: ignore[no-untyped-call]
             watched_count += 1
 
     if watched_count:

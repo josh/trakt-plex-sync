@@ -2,17 +2,19 @@ import os
 from collections.abc import Iterator
 
 import lru_cache
-from plexapi.myplex import MyPlexAccount  # type: ignore
-from plexapi.video import Video  # type: ignore
+from plexapi.myplex import MyPlexAccount
+from plexapi.video import Video
 
 
 def videos() -> Iterator[tuple[set[str], Video]]:
-    account = MyPlexAccount(
+    account = MyPlexAccount(  # type: ignore[no-untyped-call]
         username=os.environ["PLEX_USERNAME"],
         password=os.environ["PLEX_PASSWORD"],
         token=os.environ["PLEX_TOKEN"],
     )
-    resource = account.resource(os.environ["PLEX_SERVER"])
+    resource = account.resource(  # type: ignore[no-untyped-call]
+        os.environ["PLEX_SERVER"]
+    )
     plex = resource.connect()
 
     cache = lru_cache.open(
