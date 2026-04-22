@@ -27,7 +27,7 @@ scripts.trakt-plex-sync = "trakt_plex_sync:main"
 
 [dependency-groups]
 dev = [
-    "mypy>=1.20.0,<2",
+    "mypy>=1,<2",
     "ruff>=0.5,<2",
 ]
 
