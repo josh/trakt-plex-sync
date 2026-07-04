@@ -1,6 +1,7 @@
 import json
 import os
 import time
+import urllib.parse
 import urllib.request
 from importlib.metadata import version
 from typing import Any
@@ -17,11 +18,11 @@ _HTTP_HEADERS = {
 
 _MAX_RETRIES = 3
 _RETRY_DELAY_SECONDS = 2
+_PAGE_LIMIT = 250
 
 
 def watched_movie_guids() -> set[str]:
-    url = "https://api.trakt.tv/users/me/watched/movies"
-    entries = _get_json_with_retry(url, _MAX_RETRIES)
+    entries = _get_all_pages("https://api.trakt.tv/users/me/watched/movies")
 
     guids = set()
     for entry in entries:
@@ -31,13 +32,17 @@ def watched_movie_guids() -> set[str]:
 
 
 def watched_shows_guids() -> set[str]:
-    url = "https://api.trakt.tv/users/me/watched/shows"
-    entries = _get_json_with_retry(url, _MAX_RETRIES)
+    entries = _get_all_pages(
+        "https://api.trakt.tv/users/me/watched/shows",
+        {"extended": "progress"},
+    )
 
     guids = set()
     for entry in entries:
-        for season in entry.get("seasons", []):
+        for season in entry["seasons"]:
             for episode in season["episodes"]:
+                if episode.get("completed") is False:
+                    continue
                 for service in ["imdb", "tmdb", "tvdb"]:
                     guids.add(
                         "{}://{}/s{:02d}e{:02d}".format(
@@ -54,15 +59,33 @@ def watched_guids() -> set[str]:
     return watched_movie_guids().union(watched_shows_guids())
 
 
-def _get_json(url: str) -> Any:
+def _get_all_pages(url: str, params: dict[str, str] | None = None) -> list[Any]:
+    query: dict[str, str] = dict(params or {})
+    query["limit"] = str(_PAGE_LIMIT)
+
+    entries: list[Any] = []
+    page = 1
+    page_count = 1
+    while page <= page_count:
+        query["page"] = str(page)
+        page_url = f"{url}?{urllib.parse.urlencode(query)}"
+        body, page_count = _get_json_with_retry(page_url, _MAX_RETRIES)
+        assert isinstance(body, list)
+        entries.extend(body)
+        page += 1
+    return entries
+
+
+def _get_json(url: str) -> tuple[Any, int]:
     req = urllib.request.Request(url, headers=_HTTP_HEADERS)
     with urllib.request.urlopen(req, timeout=10) as response:
         data = response.read()
         assert isinstance(data, bytes)
-        return json.loads(data)
+        page_count = int(response.headers.get("X-Pagination-Page-Count") or "1")
+        return json.loads(data), page_count
 
 
-def _get_json_with_retry(url: str, count: int) -> Any:
+def _get_json_with_retry(url: str, count: int) -> tuple[Any, int]:
     last_error: TimeoutError | None = None
     for attempt in range(1, count + 1):
         try:
