@@ -36,7 +36,7 @@ def watched_shows_guids() -> set[str]:
 
     guids = set()
     for entry in entries:
-        for season in entry["seasons"]:
+        for season in entry.get("seasons", []):
             for episode in season["episodes"]:
                 for service in ["imdb", "tmdb", "tvdb"]:
                     guids.add(
