@@ -13,18 +13,28 @@ jobs:
       - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         id: app-token
         with:
-          app-id: ${{ vars.GH_APP_ID }}
+          client-id: ${{ vars.GH_APP_ID }}
           private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
 
       - name: Refresh Trakt token
         run: |
-          curl --silent --fail \
-              -X POST \
-              -F "client_id=$TRAKT_CLIENT_ID" \
-              -F "client_secret=$TRAKT_CLIENT_SECRET" \
-              -F "refresh_token=$TRAKT_REFRESH_TOKEN" \
-              -F "grant_type=refresh_token" \
-            'https://api.trakt.tv/oauth/token' >token.json
+          jq --null-input \
+            --arg client_id "$TRAKT_CLIENT_ID" \
+            --arg client_secret "$TRAKT_CLIENT_SECRET" \
+            --arg refresh_token "$TRAKT_REFRESH_TOKEN" \
+            '{
+              client_id: $client_id,
+              client_secret: $client_secret,
+              refresh_token: $refresh_token,
+              grant_type: "refresh_token"
+            }' \
+            | curl --silent --show-error --fail-with-body \
+                -X POST \
+                -H 'Content-Type: application/json' \
+                --data @- \
+                'https://api.trakt.tv/oauth/token' >token.json
+
+          jq --exit-status '.access_token and .refresh_token' token.json >/dev/null
         env:
           TRAKT_CLIENT_ID: ${{ secrets.TRAKT_CLIENT_ID }}
           TRAKT_CLIENT_SECRET: ${{ secrets.TRAKT_CLIENT_SECRET }}
