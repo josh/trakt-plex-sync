@@ -20,6 +20,7 @@ _HTTP_HEADERS = {
 _MAX_RETRIES = 3
 _RETRY_DELAY_SECONDS = 2
 _PAGE_LIMIT = 250
+_PROGRESS_PAGE_LIMIT = 100
 
 
 def watched_movie_guids() -> set[str]:
@@ -38,6 +39,7 @@ def watched_shows_guids() -> set[str]:
     entries = _get_all_pages(
         "https://api.trakt.tv/users/me/watched/shows",
         {"extended": "progress"},
+        limit=_PROGRESS_PAGE_LIMIT,
     )
 
     guids = set()
@@ -65,19 +67,25 @@ def watched_guids() -> set[str]:
     return watched_movie_guids().union(watched_shows_guids())
 
 
-def _get_all_pages(url: str, params: dict[str, str] | None = None) -> list[Any]:
+def _get_all_pages(
+    url: str,
+    params: dict[str, str] | None = None,
+    limit: int = _PAGE_LIMIT,
+) -> list[Any]:
     query: dict[str, str] = dict(params or {})
-    query["limit"] = str(_PAGE_LIMIT)
+    query["limit"] = str(limit)
 
     entries: list[Any] = []
     page = 1
     page_count = 1
-    while page <= page_count:
+    while True:
         query["page"] = str(page)
         page_url = f"{url}?{urllib.parse.urlencode(query)}"
         body, page_count = _get_json_with_retry(page_url, _MAX_RETRIES)
         assert isinstance(body, list)
         entries.extend(body)
+        if page >= page_count and len(body) < limit:
+            break
         page += 1
     return entries
 
