@@ -26,8 +26,10 @@ def watched_movie_guids() -> set[str]:
 
     guids = set()
     for entry in entries:
-        guids.add("tmdb://{}".format(entry["movie"]["ids"]["tmdb"]))
-        guids.add("imdb://{}".format(entry["movie"]["ids"]["imdb"]))
+        ids = entry["movie"]["ids"]
+        for service in ["tmdb", "imdb"]:
+            if ids.get(service):
+                guids.add(f"{service}://{ids[service]}")
     return guids
 
 
@@ -44,10 +46,13 @@ def watched_shows_guids() -> set[str]:
                 if episode.get("completed") is False:
                     continue
                 for service in ["imdb", "tmdb", "tvdb"]:
+                    service_id = entry["show"]["ids"].get(service)
+                    if not service_id:
+                        continue
                     guids.add(
                         "{}://{}/s{:02d}e{:02d}".format(
                             service,
-                            entry["show"]["ids"][service],
+                            service_id,
                             season["number"],
                             episode["number"],
                         )
