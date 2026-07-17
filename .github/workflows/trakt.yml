@@ -18,20 +18,22 @@ jobs:
 
       - name: Refresh Trakt token
         run: |
+          set -o pipefail
+
           jq --null-input \
-            --arg client_id "$TRAKT_CLIENT_ID" \
-            --arg client_secret "$TRAKT_CLIENT_SECRET" \
-            --arg refresh_token "$TRAKT_REFRESH_TOKEN" \
-            '{
-              client_id: $client_id,
-              client_secret: $client_secret,
-              refresh_token: $refresh_token,
-              grant_type: "refresh_token"
-            }' \
+              --arg client_id "$TRAKT_CLIENT_ID" \
+              --arg client_secret "$TRAKT_CLIENT_SECRET" \
+              --arg refresh_token "$TRAKT_REFRESH_TOKEN" \
+              '{
+                client_id: $client_id,
+                client_secret: $client_secret,
+                refresh_token: $refresh_token,
+                grant_type: "refresh_token"
+              }' \
             | curl --silent --show-error --fail-with-body \
-                -X POST \
-                -H 'Content-Type: application/json' \
-                --data @- \
+                --request POST \
+                --header 'Content-Type: application/json' \
+                --data-binary @- \
                 'https://api.trakt.tv/oauth/token' >token.json
 
           jq --exit-status '.access_token and .refresh_token' token.json >/dev/null
