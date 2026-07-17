@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import time
 import urllib.error
@@ -6,6 +7,8 @@ import urllib.parse
 import urllib.request
 from importlib.metadata import version
 from typing import Any
+
+logger = logging.getLogger("trakt-plex-sync")
 
 _VERSION = version("trakt-plex-sync")
 
@@ -75,23 +78,31 @@ def _get_all_pages(url: str, params: dict[str, str] | None = None) -> list[Any]:
     while page <= page_count:
         query["page"] = str(page)
         page_url = f"{url}?{urllib.parse.urlencode(query)}"
-        body, page_count = _get_json_with_retry(page_url, _MAX_RETRIES)
+        body, page_count, applied_limit = _get_json_with_retry(page_url, _MAX_RETRIES)
         assert isinstance(body, list)
+        if page == 1 and applied_limit and applied_limit < _PAGE_LIMIT:
+            logger.warning(
+                "%s: requested page limit %d but Trakt applied %d",
+                url,
+                _PAGE_LIMIT,
+                applied_limit,
+            )
         entries.extend(body)
         page += 1
     return entries
 
 
-def _get_json(url: str) -> tuple[Any, int]:
+def _get_json(url: str) -> tuple[Any, int, int]:
     req = urllib.request.Request(url, headers=_HTTP_HEADERS)
     with urllib.request.urlopen(req, timeout=10) as response:
         data = response.read()
         assert isinstance(data, bytes)
         page_count = int(response.headers.get("X-Pagination-Page-Count") or "1")
-        return json.loads(data), page_count
+        applied_limit = int(response.headers.get("X-Pagination-Limit") or "0")
+        return json.loads(data), page_count, applied_limit
 
 
-def _get_json_with_retry(url: str, count: int) -> tuple[Any, int]:
+def _get_json_with_retry(url: str, count: int) -> tuple[Any, int, int]:
     last_error: Exception | None = None
     for attempt in range(1, count + 1):
         try:
