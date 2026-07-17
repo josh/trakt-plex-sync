@@ -1,6 +1,7 @@
 import json
 import os
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from importlib.metadata import version
@@ -91,7 +92,7 @@ def _get_json(url: str) -> tuple[Any, int]:
 
 
 def _get_json_with_retry(url: str, count: int) -> tuple[Any, int]:
-    last_error: TimeoutError | None = None
+    last_error: Exception | None = None
     for attempt in range(1, count + 1):
         try:
             return _get_json(url)
@@ -100,8 +101,20 @@ def _get_json_with_retry(url: str, count: int) -> tuple[Any, int]:
             if attempt == count:
                 raise
             time.sleep(_RETRY_DELAY_SECONDS * attempt)
+        except urllib.error.HTTPError as error:
+            if error.code != 429 and error.code < 500:
+                raise
+            last_error = error
+            if attempt == count:
+                raise
+            retry_after = error.headers.get("Retry-After")
+            if retry_after and str(retry_after).isdigit():
+                delay = int(retry_after)
+            else:
+                delay = _RETRY_DELAY_SECONDS * attempt
+            time.sleep(delay)
     assert last_error is not None, (
-        "Retry loop exited unexpectedly without raising TimeoutError"
+        "Retry loop exited unexpectedly without raising an error"
     )
     raise last_error
 
