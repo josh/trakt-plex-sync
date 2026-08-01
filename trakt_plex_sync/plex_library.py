@@ -1,9 +1,14 @@
 import os
 from collections.abc import Iterator
+from functools import partial
 
 import lru_cache
 from plexapi.myplex import MyPlexAccount
 from plexapi.video import Video
+
+
+def _video_guids(video: Video) -> set[str]:
+    return {guid.id for guid in video.guids}
 
 
 def videos() -> Iterator[tuple[set[str], Video]]:
@@ -22,17 +27,13 @@ def videos() -> Iterator[tuple[set[str], Video]]:
 
     with cache:
         for movie in plex.library.section("Movies").all():
-            guids = cache.get_or_load(
-                movie.guid, lambda: set(guid.id for guid in movie.guids)
-            )
+            guids = cache.get_or_load(movie.guid, partial(_video_guids, movie))
             yield (guids, movie)
 
         for show in plex.library.section("TV Shows").all():
-            show_guids = cache.get_or_load(
-                show.guid, lambda: set(guid.id for guid in show.guids)
-            )
+            show_guids = cache.get_or_load(show.guid, partial(_video_guids, show))
             for episode in show.episodes():
-                guids = set([f"{guid}/{episode.seasonEpisode}" for guid in show_guids])
+                guids = {f"{guid}/{episode.seasonEpisode}" for guid in show_guids}
                 yield (guids, episode)
 
 
