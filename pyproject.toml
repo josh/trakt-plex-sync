@@ -22,7 +22,6 @@ dependencies = [
     "lru-cache @ https://github.com/josh/lru-cache-python/releases/download/v1.0.2/lru_cache-1.0.2-py3-none-any.whl",
     "plexapi>=4.17.2,<5",
 ]
-
 scripts.trakt-plex-sync = "trakt_plex_sync:main"
 
 [dependency-groups]
@@ -31,8 +30,8 @@ dev = [
     "ruff>=0.5,<2",
 ]
 
-[tool.hatch.metadata]
-allow-direct-references = true
+[tool.hatch]
+metadata.allow-direct-references = true
 
 [tool.ruff]
 lint.extend-select = [ "I", "UP" ]
@@ -42,14 +41,10 @@ indent = 4
 
 [tool.mypy]
 strict = true
-
-[[tool.mypy.overrides]]
-module = "plexapi.*"
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = [
-    "trakt_plex_sync",
-    "trakt_plex_sync.plex_library",
+overrides = [
+    { module = "plexapi.*", ignore_missing_imports = true },
+    { module = [
+        "trakt_plex_sync",
+        "trakt_plex_sync.plex_library",
+    ], warn_unused_ignores = false },
 ]
-warn_unused_ignores = false
