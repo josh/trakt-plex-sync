@@ -19,7 +19,6 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
-    "lru-cache @ https://github.com/josh/lru-cache-python/releases/download/v1.0.2/lru_cache-1.0.2-py3-none-any.whl",
     "plexapi>=4.17.2,<5",
 ]
 scripts.trakt-plex-sync = "trakt_plex_sync:main"
@@ -29,9 +28,6 @@ dev = [
     "mypy>=1,<2",
     "ruff>=0.5,<2",
 ]
-
-[tool.hatch]
-metadata.allow-direct-references = true
 
 [tool.ruff]
 lint.extend-select = [ "I", "UP" ]
