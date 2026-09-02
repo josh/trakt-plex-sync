@@ -4,7 +4,7 @@ requires = [ "hatchling" ]
 
 [project]
 name = "trakt-plex-sync"
-version = "0.3.0"
+version = "0.3.1"
 readme = "README.md"
 license = "MIT"
 license-files = [ "LICENSE" ]
