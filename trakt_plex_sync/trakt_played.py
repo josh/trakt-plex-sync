@@ -46,7 +46,7 @@ def watched_shows_guids() -> set[str]:
     for entry in entries:
         for season in entry["seasons"]:
             for episode in season["episodes"]:
-                if not episode.get("completed"):
+                if episode.get("completed") is False:
                     continue
                 for service in ["imdb", "tmdb", "tvdb"]:
                     service_id = entry["show"]["ids"].get(service)
