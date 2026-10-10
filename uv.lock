@@ -302,7 +302,7 @@ requires-dist = [{ name = "plexapi", specifier = ">=4.17.2,<5" }]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "mypy", specifier = ">=1,<2" },
+    { name = "mypy", specifier = ">=1.5,<2" },
     { name = "ruff", specifier = ">=0.5,<2" },
 ]
 
