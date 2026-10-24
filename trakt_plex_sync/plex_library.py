@@ -48,12 +48,12 @@ def _video_guids(video: Video) -> set[str]:
 
 
 def videos() -> Iterator[tuple[set[str], Video]]:
-    account = MyPlexAccount(  # type: ignore[no-untyped-call]
+    account = MyPlexAccount(
         username=os.environ["PLEX_USERNAME"],
         password=os.environ["PLEX_PASSWORD"],
         token=os.environ["PLEX_TOKEN"],
     )
-    resource = account.resource(os.environ["PLEX_SERVER"])  # type: ignore[no-untyped-call]
+    resource = account.resource(os.environ["PLEX_SERVER"])
     plex = resource.connect()
 
     cache = _GuidCache(

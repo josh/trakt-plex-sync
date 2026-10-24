@@ -23,7 +23,7 @@ jobs:
       - name: Ruff Linter
         run: uv run ruff check .
 
-  mypy:
+  ty:
     runs-on: ubuntu-slim
 
     strategy:
@@ -41,5 +41,5 @@ jobs:
       - name: Install dependencies
         run: uv sync
 
-      - name: mypy
-        run: uv run mypy .
+      - name: ty
+        run: uv run ty check

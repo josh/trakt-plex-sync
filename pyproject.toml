@@ -24,8 +24,8 @@ scripts.trakt-plex-sync = "trakt_plex_sync:main"
 
 [dependency-groups]
 dev = [
-    "mypy>=1.5,<2",
     "ruff>=0.5,<2",
+    "ty>=0.0.91,<0.1",
 ]
 
 [tool.ruff]
@@ -33,13 +33,3 @@ lint.extend-select = [ "I", "UP" ]
 
 [tool.pyproject-fmt]
 indent = 4
-
-[tool.mypy]
-strict = true
-overrides = [
-    { module = "plexapi.*", ignore_missing_imports = true },
-    { module = [
-        "trakt_plex_sync",
-        "trakt_plex_sync.plex_library",
-    ], warn_unused_ignores = false },
-]
